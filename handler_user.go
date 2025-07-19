@@ -42,3 +42,26 @@ func handlerRegister(s *state, cmd command) error {
 	handlerLogin(s, cmd)
 	return nil
 }
+
+func handlerReset(s *state, cmd command) error {
+	if err := s.db.DropUsers(context.Background()); err != nil {
+		return fmt.Errorf("error during db resset: %v", err)
+	}
+	fmt.Printf("Database has been successufly resetarted!!")
+	return nil
+}
+
+func handlerGetUsers(s *state, cmd command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("couldn't retrieve any user from the database error: %v", err)
+	}
+	for _, user := range users {
+		if user.Name == s.conf.Current_user_name {
+			fmt.Printf("* %s (current)\n", user.Name)
+		} else {
+			fmt.Printf("* %s", user.Name)
+		}
+	}
+	return nil
+}
