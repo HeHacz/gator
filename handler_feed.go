@@ -45,11 +45,24 @@ func handlerAddFeed(s *state, cmd command) error {
 	if err != nil {
 		return fmt.Errorf("error during feed creation: %v", err)
 	}
-	fmt.Printf("Feed %s with URL %s has been added for user %s\n", feed.Name, feed.Url, feed.UserID)
+	ffpayload := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    userID,
+		FeedID:    feed.ID,
+	}
+	ffollow, err := s.db.CreateFeedFollow(context.Background(), ffpayload)
+	if err != nil {
+		return fmt.Errorf("coundn't create feed follow error: %v", err)
+	}
+	fmt.Printf("Feed \"%s\" with URL \"%s\" has been successfuly created: %s\n", feed.Name, feed.Url, user.Name)
+	fmt.Printf("Feed has been successfuly followed:\n")
+	printFeedFollow(ffollow.UserName, ffollow.FeedName)
 	return nil
 }
 
-func handlerFeeds(s *state, cmd command) error {
+func handlerListFeeds(s *state, cmd command) error {
 	feeds, err := s.db.GetFeedsWithUsername(context.Background())
 	if err != nil {
 		return fmt.Errorf("couldn't retrieve feeds from database")
