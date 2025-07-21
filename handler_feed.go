@@ -18,16 +18,12 @@ func handlerAgg(s *state, cmd command) error {
 	return nil
 }
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return fmt.Errorf(("addfeed cmd expects a two arguments, the name and the feed URL"))
 	}
 	name := cmd.args[0]
 	feedURL := cmd.args[1]
-	user, err := s.db.GetUser(context.Background(), s.conf.Current_user_name)
-	if err != nil {
-		return fmt.Errorf("failed to get user: %v", err)
-	}
 	userID := user.ID
 
 	if name == "" || feedURL == "" {

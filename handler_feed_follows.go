@@ -9,7 +9,7 @@ import (
 	"github.com/hehacz/gator/internal/database"
 )
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) < 1 {
 		return fmt.Errorf(("follow cmd expects one argument, the feed URL"))
 	}
@@ -17,15 +17,12 @@ func handlerFollow(s *state, cmd command) error {
 	if err != nil {
 		return fmt.Errorf("coudnt get feed with url %s error: %v", cmd.args[0], err)
 	}
-	userID, err := s.db.GetUser(context.Background(), s.conf.Current_user_name)
-	if err != nil {
-		return fmt.Errorf("couldn't retrieve current user id from database error: %v", err)
-	}
+
 	payload := database.CreateFeedFollowParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		UserID:    userID.ID,
+		UserID:    user.ID,
 		FeedID:    feed.ID,
 	}
 	ffollow, err := s.db.CreateFeedFollow(context.Background(), payload)
@@ -37,12 +34,8 @@ func handlerFollow(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollowing(s *state, cmd command) error {
-	userID, err := s.db.GetUser(context.Background(), s.conf.Current_user_name)
-	if err != nil {
-		return fmt.Errorf("couldn't retrieve current user id from database error: %v", err)
-	}
-	feeds, err := s.db.GetFeedFollowsForUser(context.Background(), userID.ID)
+func handlerFollowing(s *state, cmd command, user database.User) error {
+	feeds, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
 		return fmt.Errorf("couldn't retrieve current user feeds from the database error: %v", err)
 	}
