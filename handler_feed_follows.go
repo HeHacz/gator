@@ -47,11 +47,11 @@ func handlerFollowing(s *state, cmd command, user database.User) error {
 
 func handlerUnfollow(s *state, cmd command, user database.User) error {
 	if len(cmd.args) < 1 {
-		return fmt.Errorf(("unfollow cmd expects one argument, the feed URL"))
+		return fmt.Errorf("unfollow cmd expects one argument, the feed URL")
 	}
 	feed, err := s.db.GetFeedbyURL(context.Background(), cmd.args[0])
 	if err != nil {
-		return fmt.Errorf("coudnt find feed with url %s error: %v", cmd.args[0], err)
+		return fmt.Errorf("couldn't find feed with url %s error: %v", cmd.args[0], err)
 	}
 	payload := database.DeleteFollowParams{
 		UserID: user.ID,
@@ -59,9 +59,9 @@ func handlerUnfollow(s *state, cmd command, user database.User) error {
 	}
 	err = s.db.DeleteFollow(context.Background(), payload)
 	if err != nil {
-		return fmt.Errorf("coudnt delete follow for a user %s, with url: %s error: %v", user.Name, feed.Url, err)
+		return fmt.Errorf("couldn't delete follow for a user %s, with url: %s error: %v", user.Name, feed.Url, err)
 	}
-	fmt.Printf("Follow for a user %s, with url: %s has been successfuly removed", user.Name, feed.Url)
+	fmt.Printf("Follow for a user %s, with url: %s has been successfully unfollowed", user.Name, feed.Url)
 	return nil
 }
 
