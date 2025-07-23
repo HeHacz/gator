@@ -31,7 +31,7 @@ func handledBrowse(s *state, cmd command, user database.User) error {
 	fmt.Printf("Posts collected. Found %d posts for user %s:\n", len(posts), user.Name)
 	fmt.Println("==========================================")
 	for i, post := range posts {
-		fmt.Printf("From feed: %s\n", post.FeedName)
+		fmt.Printf("From feed: %s \n", post.FeedName)
 		fmt.Printf("%d. %s\n", i+1, post.Title)
 		fmt.Printf("\tPublished at: %s\n", post.PublishedAt.Time.Format("Mon Jan 2 2006"))
 		fmt.Printf("\tDescryption: %s\n", post.Description.String)

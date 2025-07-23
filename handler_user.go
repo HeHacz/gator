@@ -47,7 +47,7 @@ func handlerReset(s *state, cmd command) error {
 	if err := s.db.DropUsers(context.Background()); err != nil {
 		return fmt.Errorf("error during db resset: %v", err)
 	}
-	fmt.Printf("Database has been successufly resetarted!!")
+	fmt.Printf("Database has been successufly resetarted!!\n")
 	return nil
 }
 
