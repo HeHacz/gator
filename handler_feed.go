@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"log"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -96,17 +99,48 @@ func scrapeFeeds(s *state) error {
 	if _, err := s.db.MarkFeedFetched(context.Background(), next_feed.ID); err != nil {
 		return fmt.Errorf("couldn't mark feed %s as fetched error: %v", next_feed.Name, err)
 	}
-	scrapeFeed(next_feed)
+	scrapeFeed(s.db, next_feed)
 	return nil
 }
 
-func scrapeFeed(feed database.Feed) error {
+func scrapeFeed(db *database.Queries, feed database.Feed) error {
 	feedData, err := fetchFeed(context.Background(), feed.Url)
 	if err != nil {
 		return fmt.Errorf("couldn't fetch feed data error: %v", err)
 	}
-	for i, item := range feedData.Channel.Item {
-		fmt.Printf("%d. post found: %s\n", i, item.Title)
+	for _, item := range feedData.Channel.Item {
+		pubDate := sql.NullTime{}
+		if time, err := time.Parse(time.RFC1123Z, item.PubDate); err == nil {
+			pubDate = sql.NullTime{
+				Time:  time,
+				Valid: true,
+			}
+		} else {
+			log.Printf("time layout is not a valid time value error: %v", err)
+			continue
+		}
+		payload := database.CreatePostParams{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			Title:     item.Title,
+			Url:       item.Link,
+			Description: sql.NullString{
+				String: item.Description,
+				Valid:  true,
+			},
+			PublishedAt: pubDate,
+			FeedID:      feed.ID,
+		}
+		_, err := db.CreatePost(context.Background(), payload)
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+				continue
+			} else {
+				log.Printf("Post couldn't be created. Error: %v", err)
+				continue
+			}
+		}
 	}
 	fmt.Printf("Feed %s collected. Found %d posts\n", feed.Name, len(feedData.Channel.Item))
 	return nil
